@@ -31,6 +31,9 @@
         <commons-lang3.version>3.4</commons-lang3.version>
         <fastjson.version>1.2.39</fastjson.version>
         <druid-version>1.1.5</druid-version>
+        <springfox-swagger2.version>2.2.2</springfox-swagger2.version>
+        <pinyin4j.version>2.5.0</pinyin4j.version>
+        <scala-bcrypt_2.10.version>2.3</scala-bcrypt_2.10.version>
     </properties>
 
     <dependencies>
@@ -53,9 +56,27 @@
         </dependency>
 
         <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <scope>runtime</scope>
+        </dependency>
+
+        <!-- swagger start -->
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger2</artifactId>
+            <version>${springfox-swagger2.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger-ui</artifactId>
+            <version>${springfox-swagger2.version}</version>
         </dependency>
 
         <dependency>
@@ -102,6 +123,18 @@
             <groupId>com.alibaba</groupId>
             <artifactId>druid</artifactId>
             <version>${druid-version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.belerweb</groupId>
+            <artifactId>pinyin4j</artifactId>
+            <version>${pinyin4j.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.t3hnar</groupId>
+            <artifactId>scala-bcrypt_2.10</artifactId>
+            <version>${scala-bcrypt_2.10.version}</version>
         </dependency>
     </dependencies>
 

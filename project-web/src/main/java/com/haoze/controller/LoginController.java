@@ -2,7 +2,21 @@ package com.haoze.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.constant.PublicResultConstant;
+import com.entity.User;
+import com.haoze.annotation.Log;
+import com.haoze.annotation.Pass;
+import com.haoze.annotation.ValidationParam;
+import com.model.PublicResult;
 import com.system.IUserService;
+import com.utils.ComUtil;
+import com.utils.Constant;
+import com.utils.SmsSendUtil;
+import com.utils.StringUtil;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,15 +30,16 @@ import java.util.Map;
  */
 @RestController
 public class LoginController {
+
     @Autowired
     private IUserService userService;
-    @Autowired
+    /*@Autowired
     private ISmsVerifyService smsVerifyService;
     @Autowired
     private IRoleService roleService;
 
     @Autowired
-    private INoticeService noticeService;
+    private INoticeService noticeService;*/
 
     @ApiOperation(value="手机密码登录", notes="body体参数,不需要Authorization",produces = "application/json")
     @ApiImplicitParams({
@@ -46,9 +61,9 @@ public class LoginController {
         }
         Map<String, Object> result = userService.getLoginUserAndMenuInfo(user);
         //测试websocket用户登录给管理员发送消息的例子  前端代码参考父目录下WebSocketDemo.html
-        noticeService.insertByThemeNo("themeNo-cwr3fsxf233edasdfcf2s3","13888888888");
-        MyWebSocketService.sendMessageTo(JSONObject.toJSONString(user),"13888888888");
-        return new PublicResult<>(PublicResultConstant.SUCCESS, result);
+        //noticeService.insertByThemeNo("themeNo-cwr3fsxf233edasdfcf2s3","13888888888");
+        //MyWebSocketService.sendMessageTo(JSONObject.toJSONString(user),"13888888888");
+        return new PublicResult(PublicResultConstant.SUCCESS, result);
     }
 
     @ApiOperation(value="短信验证码登录", notes="body体参数,不需要Authorization",produces = "application/json")
@@ -70,14 +85,14 @@ public class LoginController {
         if(!ComUtil.isEmpty(user) && user.getStatus() != Constant.ENABLE){
             return new PublicResult<>("该用户状态不是启用的!", null);
         }
-        List<SmsVerify> smsVerifies = smsVerifyService.getByMobileAndCaptchaAndType(mobile,
-                requestJson.getString("captcha"), SmsSendUtil.SMSType.getType(SmsSendUtil.SMSType.AUTH.name()));
-        if(ComUtil.isEmpty(smsVerifies)){
+        /*List<SmsVerify> smsVerifies = smsVerifyService.getByMobileAndCaptchaAndType(mobile,
+                requestJson.getString("captcha"), SmsSendUtil.SMSType.getType(SmsSendUtil.SMSType.AUTH.name()));*/
+        /*if(ComUtil.isEmpty(smsVerifies)){
             return new PublicResult<>(PublicResultConstant.VERIFY_PARAM_ERROR, null);
-        }
-        if(SmsSendUtil.isCaptchaPassTime(smsVerifies.get(0).getCreateTime())){
+        }*/
+        /*if(SmsSendUtil.isCaptchaPassTime(smsVerifies.get(0).getCreateTime())){
             return new PublicResult<>(PublicResultConstant.VERIFY_PARAM_PASS, null);
-        }
+        }*/
         if (ComUtil.isEmpty(user)) {
             User userRegister = new User();
             //设置默认密码
@@ -112,7 +127,7 @@ public class LoginController {
         if (!userRegister.getPassWord().equals(requestJson.getString("rePassWord"))) {
             return new PublicResult<>(PublicResultConstant.INVALID_RE_PASSWORD, null);
         }
-        List<SmsVerify> smsVerifies = smsVerifyService.getByMobileAndCaptchaAndType(userRegister.getMobile(),
+        /*List<SmsVerify> smsVerifies = smsVerifyService.getByMobileAndCaptchaAndType(userRegister.getMobile(),
                 requestJson.getString("captcha"), SmsSendUtil.SMSType.getType(SmsSendUtil.SMSType.REG.name()));
         if(ComUtil.isEmpty(smsVerifies)){
             return new PublicResult<>(PublicResultConstant.VERIFY_PARAM_ERROR, null);
@@ -120,7 +135,7 @@ public class LoginController {
         //验证码是否过期
         if(SmsSendUtil.isCaptchaPassTime(smsVerifies.get(0).getCreateTime())){
             return new PublicResult<>(PublicResultConstant.VERIFY_PARAM_PASS, null);
-        }
+        }*/
         userRegister.setPassWord(BCrypt.hashpw(requestJson.getString("passWord"), BCrypt.gensalt()));
         //默认注册普通用户
         userService.register(userRegister, Constant.RoleType.USER);
@@ -146,18 +161,18 @@ public class LoginController {
             return new PublicResult<>(PublicResultConstant.INVALID_RE_PASSWORD, null);
         }
         User user = userService.getUserByMobile(mobile);
-        roleService.getRoleIsAdminByUserNo(user.getUserNo());
+        //roleService.getRoleIsAdminByUserNo(user.getUserNo());
         if(ComUtil.isEmpty(user)){
             return new PublicResult<>(PublicResultConstant.INVALID_USER, null);
         }
-        List<SmsVerify> smsVerifies = smsVerifyService.getByMobileAndCaptchaAndType(mobile,
+        /*List<SmsVerify> smsVerifies = smsVerifyService.getByMobileAndCaptchaAndType(mobile,
                 requestJson.getString("captcha"), SmsSendUtil.SMSType.getType(SmsSendUtil.SMSType.FINDPASSWORD.name()));
         if(ComUtil.isEmpty(smsVerifies)){
             return new PublicResult<>(PublicResultConstant.VERIFY_PARAM_ERROR, null);
         }
         if(SmsSendUtil.isCaptchaPassTime(smsVerifies.get(0).getCreateTime())){
             return new PublicResult<>(PublicResultConstant.VERIFY_PARAM_PASS, null);
-        }
+        }*/
         user.setPassWord(BCrypt.hashpw(requestJson.getString("passWord"),BCrypt.gensalt()));
         userService.updateById(user);
         return  new PublicResult<String>(PublicResultConstant.SUCCESS, null);
@@ -169,11 +184,11 @@ public class LoginController {
      * @return
      * @throws Exception
      */
-    @GetMapping("/check/mobile")
+    /*@GetMapping("/check/mobile")
     @Pass
     @ApiIgnore
     public PublicResult loginBycaptcha(@RequestParam("mobile") String mobile) throws Exception{
         User user = userService.getUserByMobile(mobile);
         return new PublicResult<>(PublicResultConstant.SUCCESS, !ComUtil.isEmpty(user));
-    }
+    }*/
 }
